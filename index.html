@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle EPM Architecture - Everything Runs on Essbase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .title-section h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .title-section p {
+            font-size: 1.5rem;
+            color: #f1f5f9;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .layer {
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .layer-java {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            border: 2px solid #60a5fa;
+        }
+
+        .layer-essbase {
+            background: linear-gradient(to right, #dc2626, #b91c1c);
+            border: 2px solid #f87171;
+        }
+
+        .layer-infrastructure {
+            background: linear-gradient(to right, #475569, #1e293b);
+            border: 2px solid #64748b;
+        }
+
+        .layer-insight {
+            background: linear-gradient(to right, #eab308, #ca8a04);
+            border: 2px solid #fde047;
+        }
+
+        .layer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .layer-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .layer-header h3 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon {
+            width: 2rem;
+            height: 2rem;
+            color: white;
+        }
+
+        .subtitle {
+            color: #f0f9ff;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-white {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .app-name {
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-full-name {
+            color: #dbeafe;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .app-cubes {
+            color: #bfdbfe;
+            font-size: 0.875rem;
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        .arrow-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .arrow-text {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .arrow {
+            width: 2rem;
+            height: 2rem;
+            color: #facc15;
+            margin: 0 auto;
+        }
+
+        .badge {
+            position: absolute;
+            top: -0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef08a;
+            color: #450a0a;
+            padding: 0.4rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 900;
+            font-size: 1rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .essbase-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        .section-title {
+            font-weight: 900;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-red {
+            color: #fef2f2;
+        }
+
+        .text-white {
+            color: #ffffff;
+        }
+
+        ul {
+            list-style: none;
+            font-size: 1rem;
+        }
+
+        ul li {
+            color: #fef2f2;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .cube-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .file-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.25rem;
+            padding: 0.75rem;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .file-name {
+            color: #fef08a;
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 0 10px rgba(254, 240, 138, 0.5);
+        }
+
+        .file-desc {
+            color: #fef2f2;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .file-size {
+            color: #fecaca;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .note {
+            margin-top: 1rem;
+            color: #fef2f2;
+            font-size: 0.875rem;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .infra-card {
+            text-align: center;
+        }
+
+        .infra-title {
+            color: #ffffff;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .infra-text {
+            color: #f1f5f9;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .insight-box {
+            background: rgba(120, 53, 15, 0.2);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid #a16207;
+        }
+
+        .insight-title {
+            color: #1c0a00;
+            font-size: 1.25rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .insight-text {
+            color: #422006;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .insight-icon {
+            color: #78350f;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .title-section h1 {
+                font-size: 1.75rem;
+            }
+
+            .title-section p {
+                font-size: 1rem;
+            }
+
+            .layer {
+                padding: 1.5rem;
+            }
+
+            .layer-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .grid-4, .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Title -->
+        <div class="title-section">
+            <h1>Oracle EPM Architecture</h1>
+            <p>Everything Runs on Essbase</p>
+        </div>
+
+        <!-- Layer 1: Java Applications -->
+        <div class="layer layer-java">
+            <div class="layer-header">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <h2>Java Application Layer</h2>
+            </div>
+            <p class="subtitle">WebLogic / Java Containers (Foundation Services)</p>
+            
+            <div class="grid-4">
+                <div class="card">
+                    <div class="app-name">HFM</div>
+                    <div class="app-full-name">Hyperion Financial Management</div>
+                    <div class="app-cubes">1 cube per app</div>
+                </div>
+                <div class="card">
+                    <div class="app-name">Planning</div>
+                    <div class="app-full-name">Planning</div>
+                    <div class="app-cubes">1-3 cubes per app</div>
+                </div>
+                <div class="card">
+                    <div class="app-name">FDMEE</div>
+                    <div class="app-full-name">Financial Data Quality Management</div>
+                    <div class="app-cubes">Uses Planning cubes</div>
+                </div>
+                <div class="card">
+                    <div class="app-name">Tax</div>
+                    <div class="app-full-name">Tax Provision</div>
+                    <div class="app-cubes">1+ cubes per app</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="arrow-section">
+            <div class="arrow-text">All applications built on top of ↓</div>
+            <svg class="arrow" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v10.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+
+        <!-- Layer 2: Essbase -->
+        <div class="layer layer-essbase">
+            <div class="badge">THE REAL ENGINE</div>
+            
+            <div class="layer-header">
+                <svg class="icon essbase-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                </svg>
+                <h2>Essbase</h2>
+            </div>
+            
+            <div class="card-white">
+                <div class="grid-2">
+                    <div>
+                        <div class="section-title text-red">Native C/C++ Application</div>
+                        <ul>
+                            <li>• Compiled binary executable</li>
+                            <li>• Direct OS-level process</li>
+                            <li>• Not Java, not containerized*</li>
+                            <li>• 30+ years of optimization</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-title text-red">Like Oracle DB or MySQL</div>
+                        <ul>
+                            <li>• Standalone database engine</li>
+                            <li>• Own storage format (.pag, .ind)</li>
+                            <li>• Own query language (MDX)</li>
+                            <li>• Own calculation language (calc scripts)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-white">
+                <h3 class="cube-title">Multidimensional Cube Storage</h3>
+                <div class="grid-3">
+                    <div class="file-card">
+                        <div class="file-name">CONSOL.pag</div>
+                        <div class="file-desc">HFM Data Pages</div>
+                        <div class="file-size">2.3 GB</div>
+                    </div>
+                    <div class="file-card">
+                        <div class="file-name">PLAN1.pag</div>
+                        <div class="file-desc">Planning Data</div>
+                        <div class="file-size">856 MB</div>
+                    </div>
+                    <div class="file-card">
+                        <div class="file-name">ACTUAL.ind</div>
+                        <div class="file-desc">Index File</div>
+                        <div class="file-size">124 MB</div>
+                    </div>
+                </div>
+                <div class="note">
+                    *In cloud, Essbase runs in OCI containers but is still the same native C++ engine
+                </div>
+            </div>
+        </div>
+
+        <!-- Layer 3: Infrastructure -->
+        <div class="layer layer-infrastructure">
+            <div class="layer-header">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+                </svg>
+                <h2>Infrastructure Layer</h2>
+            </div>
+            
+            <div class="grid-3">
+                <div class="card infra-card">
+                    <div class="infra-title">Operating System</div>
+                    <div class="infra-text">Linux / Windows</div>
+                </div>
+                <div class="card infra-card">
+                    <div class="infra-title">File System</div>
+                    <div class="infra-text">Cube storage (.pag/.ind)</div>
+                </div>
+                <div class="card infra-card">
+                    <div class="infra-title">Relational DB</div>
+                    <div class="infra-text">Metadata only (not cubes)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Insight -->
+        <div class="layer layer-insight">
+            <div class="layer-header">
+                <svg class="icon insight-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                </svg>
+                <h3>The Key Insight</h3>
+            </div>
+            <div class="insight-box">
+                <p class="insight-title">
+                    HFM, Planning, and Tax Provision are NOT separate products.
+                </p>
+                <p class="insight-text">
+                    They are <strong>pre-built applications</strong> that Oracle constructed 
+                    <strong>on top of Essbase</strong>. The Java containers provide the UI, workflow, 
+                    and business logic, but <strong>all data lives in Essbase cubes</strong> and 
+                    <strong>all calculations run in the C++ Essbase engine</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
